@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Billing Calculator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f4f5f7;
+    margin: 0;
+    padding: 24px;
+    color: #1f2328;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    padding: 32px;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+
+  .top-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: #555; font-weight: 600; }
+  .field input {
+    padding: 8px 10px;
+    border: 1px solid #d7dae0;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  th, td { padding: 8px; text-align: left; font-size: 13px; }
+  thead th {
+    background: #f0f1f3;
+    font-weight: 600;
+    color: #444;
+    border-bottom: 1px solid #e2e4e8;
+  }
+  tbody tr { border-bottom: 1px solid #eee; }
+  tbody input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #d7dae0;
+    border-radius: 5px;
+    font-size: 13px;
+  }
+  td.num, th.num { text-align: right; }
+  td.amount { font-weight: 600; text-align: right; padding-right: 8px; }
+  .remove-btn {
+    background: none;
+    border: none;
+    color: #c0392b;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 6px;
+  }
+
+  .row-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .add-btn {
+    background: #eef1ff;
+    color: #3b4bd6;
+    border: 1px solid #c7cdfa;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .add-btn:hover { background: #e0e4ff; }
+
+  .summary {
+    margin-left: auto;
+    width: 280px;
+    border-top: 2px solid #1f2328;
+    padding-top: 12px;
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 14px;
+  }
+  .summary-row.total {
+    font-size: 18px;
+    font-weight: 700;
+    border-top: 1px solid #e2e4e8;
+    margin-top: 6px;
+    padding-top: 10px;
+  }
+  .summary-row input {
+    width: 70px;
+    text-align: right;
+    padding: 4px 6px;
+    border: 1px solid #d7dae0;
+    border-radius: 5px;
+    font-size: 13px;
+  }
+
+  .actions { display: flex; gap: 12px; margin-top: 28px; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary { background: #3b4bd6; color: #fff; }
+  .btn-primary:hover { background: #2e3bb0; }
+  .btn-secondary { background: #fff; color: #333; border: 1px solid #d7dae0; }
+  .btn-secondary:hover { background: #f4f5f7; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .container { box-shadow: none; padding: 0; }
+    .add-btn, .remove-btn, .actions { display: none !important; }
+    input { border: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Billing / Invoice Calculator</h1>
+  <div class="subtitle">Fill in details, add items, and the total updates automatically.</div>
+
+  <div class="top-fields">
+    <div class="field">
+      <label>Business Name</label>
+      <input type="text" id="businessName" placeholder="Your business name">
+    </div>
+    <div class="field">
+      <label>Client Name</label>
+      <input type="text" id="clientName" placeholder="Client / customer name">
+    </div>
+    <div class="field">
+      <label>Invoice No.</label>
+      <input type="text" id="invoiceNo" placeholder="INV-001">
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="invoiceDate">
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:38%">Item / Description</th>
+        <th class="num" style="width:12%">Qty</th>
+        <th class="num" style="width:18%">Rate</th>
+        <th class="num" style="width:20%">Amount</th>
+        <th style="width:5%"></th>
+      </tr>
+    </thead>
+    <tbody id="itemsBody"></tbody>
+  </table>
+
+  <div class="row-actions">
+    <button class="add-btn" onclick="addRow()">+ Add Item</button>
+  </div>
+
+  <div class="summary">
+    <div class="summary-row">
+      <span>Subtotal</span>
+      <span id="subtotal">0.00</span>
+    </div>
+    <div class="summary-row">
+      <span>Discount (%)</span>
+      <input type="number" id="discountPct" value="0" min="0" oninput="calculate()">
+    </div>
+    <div class="summary-row">
+      <span>Tax / GST (%)</span>
+      <input type="number" id="taxPct" value="0" min="0" oninput="calculate()">
+    </div>
+    <div class="summary-row total">
+      <span>Total</span>
+      <span id="grandTotal">0.00</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="window.print()">Print / Save as PDF</button>
+    <button class="btn btn-secondary" onclick="addRow()">Add Another Item</button>
+  </div>
+</div>
+
+<script>
+let rowCount = 0;
+
+function addRow(desc = '', qty = 1, rate = 0) {
+  rowCount++;
+  const tbody = document.getElementById('itemsBody');
+  const tr = document.createElement('tr');
+  tr.id = 'row-' + rowCount;
+  tr.innerHTML = `
+    <td><input type="text" value="${desc}" placeholder="Item description" oninput="calculate()"></td>
+    <td class="num"><input type="number" value="${qty}" min="0" step="1" oninput="calculate()"></td>
+    <td class="num"><input type="number" value="${rate}" min="0" step="0.01" oninput="calculate()"></td>
+    <td class="amount" id="amount-${rowCount}">0.00</td>
+    <td><button class="remove-btn" onclick="removeRow(${rowCount})">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+  calculate();
+}
+
+function removeRow(id) {
+  const row = document.getElementById('row-' + id);
+  if (row) row.remove();
+  calculate();
+}
+
+function calculate() {
+  const tbody = document.getElementById('itemsBody');
+  let subtotal = 0;
+  Array.from(tbody.children).forEach(tr => {
+    const inputs = tr.querySelectorAll('input');
+    const qty = parseFloat(inputs[1].value) || 0;
+    const rate = parseFloat(inputs[2].value) || 0;
+    const amount = qty * rate;
+    const amountCell = tr.querySelector('.amount');
+    amountCell.textContent = amount.toFixed(2);
+    subtotal += amount;
+  });
+
+  const discountPct = parseFloat(document.getElementById('discountPct').value) || 0;
+  const taxPct = parseFloat(document.getElementById('taxPct').value) || 0;
+
+  const discountAmt = subtotal * (discountPct / 100);
+  const afterDiscount = subtotal - discountAmt;
+  const taxAmt = afterDiscount * (taxPct / 100);
+  const total = afterDiscount + taxAmt;
+
+  document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+  document.getElementById('grandTotal').textContent = total.toFixed(2);
+}
+
+// Initialize with a couple of empty rows and today's date
+document.getElementById('invoiceDate').valueAsDate = new Date();
+addRow();
+addRow();
+</script>
+</body>
+</html>
