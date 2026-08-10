@@ -116,6 +116,20 @@
     animation: popIn 0.5s cubic-bezier(.2,.8,.3,1.2);
   }
 
+  /* On an actual phone, fill the whole screen like a real app —
+     no floating card, no black margins, no rounded "mockup" border.
+     The desktop phone-mockup look above only applies on wider screens. */
+  @media (max-width: 640px) {
+    body { padding: 0; }
+    .phone-frame { padding: 0; max-width: 100%; width: 100%; }
+    .phone-frame::before { display: none; }
+    .phone {
+      max-width: 100%; min-height: 100vh; border-radius: 0; box-shadow: none;
+      animation: none;
+    }
+    .screen { min-height: 100vh; }
+  }
+
   .screen { display: none; flex-direction: column; flex: 1; min-height: 92vh; position: relative; }
   .screen.active { display: flex; animation: fadeSlideUp 0.4s ease; }
 
