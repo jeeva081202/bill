@@ -397,7 +397,6 @@
     position: relative;
     border: 1px solid #cbb68c;
     background: #fff;
-    overflow: hidden;
   }
   .receipt-content { position: relative; z-index: 1; }
 
@@ -654,6 +653,21 @@
       padding: 10px 16px !important; display: block !important;
     }
     .inv-actions, .confetti-canvas, .success-ring, .success-text { display: none !important; }
+    /* Force every invoice sub-block to plain static block flow so nothing
+       collapses to zero height on print/PDF engines. */
+    .receipt-frame, .receipt-content, .invoice-head, .head-divider, .invoice-meta,
+    .invoice-cust, .inv-totals-box, .inv-sub-row, .inv-total, .receipt-footer {
+      height: auto !important; min-height: 0 !important; max-height: none !important;
+      overflow: visible !important; position: static !important; display: block !important;
+    }
+    .invoice-meta { display: flex !important; }
+    .inv-sub-row { display: flex !important; }
+    .inv-total { display: flex !important; }
+    table.inv-table { display: table !important; height: auto !important; overflow: visible !important; }
+    table.inv-table thead { display: table-header-group !important; }
+    table.inv-table tbody { display: table-row-group !important; }
+    table.inv-table tr { display: table-row !important; }
+    table.inv-table th, table.inv-table td { display: table-cell !important; }
   }
 </style>
 </head>
