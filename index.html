@@ -674,43 +674,6 @@
     table.inv-table th, table.inv-table td { display: table-cell !important; }
   }
 
-  /* ---------- Saree photo (customer card + admin manage row) ---------- */
-  .card-img {
-    width: 100%; height: 84px; object-fit: cover; border-radius: 10px;
-    margin-bottom: 8px; border: 1px solid rgba(240,193,75,0.25); background: #150a1e;
-  }
-  .card-img-ph {
-    width: 100%; height: 84px; border-radius: 10px; margin-bottom: 8px;
-    background: linear-gradient(160deg,#2a1436,#1a0e24); border: 1px dashed rgba(240,193,75,0.25);
-    display: flex; align-items: center; justify-content: center; font-size: 20px; opacity: 0.5;
-  }
-  .manage-row { flex-wrap: wrap; }
-  .manage-img-thumb {
-    width: 34px; height: 34px; border-radius: 8px; object-fit: cover;
-    border: 1px solid rgba(240,193,75,0.3); background: #150a1e; flex-shrink: 0;
-  }
-  .manage-img-ph {
-    width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
-    background: #1a0e24; border: 1px dashed rgba(240,193,75,0.3);
-    display: flex; align-items: center; justify-content: center; font-size: 13px; opacity: 0.55;
-  }
-  .manage-img-upload-label {
-    font-size: 13px; cursor: pointer; padding: 6px 7px; border-radius: 7px;
-    background: rgba(34,224,160,0.12); border: 1px solid rgba(34,224,160,0.35); flex-shrink: 0;
-  }
-  .add-form .img-upload-row {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
-  }
-  .add-form .img-upload-btn {
-    flex-shrink: 0; font-size: 11px; font-weight: 700; color: var(--emerald);
-    background: rgba(34,224,160,0.12); border: 1px dashed rgba(34,224,160,0.4);
-    border-radius: 9px; padding: 9px 12px; cursor: pointer; text-align: center;
-  }
-  .add-form .img-upload-preview {
-    width: 40px; height: 40px; border-radius: 8px; object-fit: cover;
-    border: 1px solid rgba(240,193,75,0.3); display: none;
-  }
-
   /* ---------- GST / Courier fee rows (billing screen) ---------- */
   .fee-card {
     background: linear-gradient(120deg,rgba(240,193,75,0.14),rgba(255,46,99,0.08));
@@ -988,11 +951,6 @@
         <div class="frow">
           <input type="text" id="newSareeMeters" placeholder="Meters (5.50M / 6.20M)" list="meterSuggestions">
           <input type="number" id="newSareePrice" placeholder="Price ₹">
-        </div>
-        <div class="img-upload-row">
-          <img class="img-upload-preview" id="newSareeImgPreview" alt="Preview">
-          <label class="img-upload-btn ripple-btn" for="newSareeImageInput" style="flex:1;">📷 Saree Photo (optional)</label>
-          <input type="file" id="newSareeImageInput" accept="image/*" style="display:none;" onchange="handleNewSareeImagePreview(event)">
         </div>
         <datalist id="meterSuggestions"></datalist>
         <button onclick="addNewSaree()">+ Add Saree to Catalog</button>
@@ -1379,7 +1337,6 @@ function renderCatalog(justAddedId) {
     card.style.animationDelay = (idx * 0.03) + 's';
     card.innerHTML = `
       <button class="minus-btn" onclick="event.stopPropagation(); decrement(${item.id})">−</button>
-      ${item.image ? `<img class="card-img" src="${item.image}" alt="${item.name}">` : `<div class="card-img-ph">🧵</div>`}
       <div class="card-top">
         <span class="meter-badge">${item.meters}</span>
         <span class="qty-badge ${qty > 0 ? 'show' : ''}">${qty}x in bill</span>
@@ -2040,8 +1997,6 @@ function renderManage() {
       const row = document.createElement('div');
       row.className = 'manage-row';
       row.innerHTML = `
-        ${item.image ? `<img class="manage-img-thumb" src="${item.image}" alt="${item.name}">` : `<div class="manage-img-ph">🧵</div>`}
-        <label class="manage-img-upload-label" title="Saree photo maathunga">📷<input type="file" accept="image/*" style="display:none;" onchange="handleSareeImageUpload(${item.id}, event)"></label>
         <span class="m-name">${item.name}</span>
         <input type="number" class="m-price" id="price-${item.id}" value="${item.price}">
         <button class="btn-save-row" onclick="saveSareePrice(${item.id})">💾</button>
@@ -2058,23 +2013,6 @@ function renderManage() {
     opt.value = m;
     datalist.appendChild(opt);
   });
-}
-
-function handleSareeImageUpload(id, event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  if (!file.type.startsWith('image/')) { showToast('⚠️ Image file podunga (JPG/PNG)'); return; }
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const item = catalog.find(c => c.id === id);
-    if (!item) return;
-    item.image = e.target.result;
-    saveCatalog(catalog);
-    renderManage();
-    renderCatalog();
-    showToast('📷 ' + item.name + ' photo updated!');
-  };
-  reader.readAsDataURL(file);
 }
 
 function saveSareePrice(id) {
@@ -2099,22 +2037,6 @@ function deleteSaree(id) {
   showToast('🗑️ Saree deleted');
 }
 
-let newSareeImageData = null;
-
-function handleNewSareeImagePreview(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  if (!file.type.startsWith('image/')) { showToast('⚠️ Image file podunga (JPG/PNG)'); return; }
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    newSareeImageData = e.target.result;
-    const preview = document.getElementById('newSareeImgPreview');
-    preview.src = newSareeImageData;
-    preview.style.display = 'block';
-  };
-  reader.readAsDataURL(file);
-}
-
 function addNewSaree() {
   const name = document.getElementById('newSareeName').value.trim();
   const meters = document.getElementById('newSareeMeters').value.trim();
@@ -2125,18 +2047,14 @@ function addNewSaree() {
     return;
   }
   const newId = catalog.length ? Math.max(...catalog.map(c => c.id)) + 1 : 1;
-  catalog.push({ id: newId, meters, name: name.toUpperCase(), price, image: newSareeImageData || null });
+  catalog.push({ id: newId, meters, name: name.toUpperCase(), price });
   saveCatalog(catalog);
 
   document.getElementById('newSareeName').value = '';
   document.getElementById('newSareeMeters').value = '';
   document.getElementById('newSareePrice').value = '';
-  document.getElementById('newSareeImageInput').value = '';
-  document.getElementById('newSareeImgPreview').style.display = 'none';
-  newSareeImageData = null;
 
   renderManage();
-  renderCatalog();
   showToast('✅ New saree added to catalog!');
 }
 </script>
