@@ -400,8 +400,11 @@
   .receipt-frame {
     position: relative;
     border: 1px solid #cbb68c;
+    border-radius: 10px;
+    overflow: hidden;
     background: #fff;
     color: #2a1c10;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.14);
   }
   .receipt-content { position: relative; z-index: 1; }
 
@@ -425,10 +428,11 @@
   .invoice-cust b { color: var(--ruby-deep); display: inline-block; min-width: 92px; }
   table.inv-table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin: 0; }
   table.inv-table th {
-    text-align: left; border-bottom: 2px solid var(--ruby-deep); padding: 8px 6px; color: var(--ruby-deep);
+    text-align: left; border-bottom: 2px solid var(--ruby-deep); padding: 9px 8px; color: var(--ruby-deep);
     background: #fbf6ea; font-size: 10.5px; letter-spacing: .5px; text-transform: uppercase;
   }
-  table.inv-table td { padding: 8px 6px; border-bottom: 1px solid #f0e0c0; color: #3a2a1a; vertical-align: top; }
+  table.inv-table td { padding: 9px 8px; border-bottom: 1px solid #f0e0c0; color: #3a2a1a; vertical-align: top; }
+  table.inv-table tbody tr:nth-child(even) td { background: #fbf7ee; }
   table.inv-table th:first-child, table.inv-table td:first-child { width: 8%; text-align: center; }
   table.inv-table th:nth-child(3), table.inv-table td:nth-child(3) { text-align: center; width: 12%; }
   table.inv-table th:last-child, table.inv-table td:last-child,
@@ -440,7 +444,7 @@
     display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: var(--ruby-deep);
   }
   .receipt-footer {
-    margin: 0; padding: 12px 18px 16px; border-top: 1px solid #e5d7b8;
+    margin: 0; padding: 14px 18px 18px; border-top: 1px dashed #cbb68c;
     font-size: 10.5px; color: #8a7355;
   }
   .receipt-footer .note { text-align: center; font-style: italic; margin: 0; display: block; }
@@ -676,7 +680,13 @@
     table.inv-table tbody { display: table-row-group !important; }
     table.inv-table tr { display: table-row !important; }
     table.inv-table th, table.inv-table td { display: table-cell !important; }
+    /* Zero-value rows (Discount/GST/Courier not used on this bill) must stay
+       hidden even under the print overrides above — higher specificity than
+       the plain .inv-sub-row rule wins regardless of source order. */
+    .inv-sub-row.hidden, .inv-total.hidden { display: none !important; }
   }
+  .inv-sub-row { display: flex; }
+  .inv-sub-row.hidden, .inv-total.hidden { display: none !important; }
 
   /* ---------- Customer history / lookup ---------- */
   .hist-link { color: var(--emerald); text-decoration: underline; cursor: pointer; font-weight: 700; margin-left: 6px; white-space: nowrap; }
@@ -763,7 +773,7 @@
       <img class="logo-img logo-md" id="logoCustomer" alt="Krishnu Cotton Sarees">
       <div class="brand shimmer-text">KRISHNU COTTON SAREES</div>
       <h2>New Bill</h2>
-      <p>Yaarukku bill podurom? Customer details podunga.</p>
+      <p>Who's this bill for? Enter the customer details.</p>
 
       <div class="field" style="animation-delay:.05s">
         <label>Customer Name</label>
@@ -831,12 +841,12 @@
       <div class="fee-card">
         <span class="label">🧾 GST %</span>
         <input type="number" id="gstInput" min="0" max="100" value="0" oninput="onGstChange()">
-        <span class="fee-hint">Add pannuna GST bill total-la serum</span>
+        <span class="fee-hint">Added to the bill total</span>
       </div>
       <div class="fee-card">
         <span class="label">🚚 Courier ₹</span>
         <input type="number" id="courierInput" min="0" value="0" oninput="onCourierChange()">
-        <span class="fee-hint">Manual ah fill pannunga, last total-la add aagum</span>
+        <span class="fee-hint">Enter manually — added at the end of the total</span>
       </div>
       <div id="billList"></div>
     </div>
@@ -846,7 +856,7 @@
         Total Sarees: <b id="totalCount">0</b>
         <span class="amt" id="totalAmount">₹0</span>
       </div>
-      <button id="genInvoiceBtn" class="ripple-btn" onclick="generateInvoice()" disabled>🧵 Weave My Bill ✨</button>
+      <button id="genInvoiceBtn" class="ripple-btn" onclick="generateInvoice()" disabled>🧵 Generate Bill ✨</button>
     </div>
   </div>
 
@@ -884,13 +894,13 @@
             <div class="inv-sub-row" id="invSubtotalRow" style="display:flex;justify-content:space-between;font-size:12px;color:#7a6a5a;">
               <span>Subtotal</span><span id="invSubtotal">₹0</span>
             </div>
-            <div class="inv-sub-row" id="invDiscountRow" style="display:none;justify-content:space-between;font-size:12px;color:#0e9e6b;margin-top:4px;">
+            <div class="inv-sub-row hidden" id="invDiscountRow" style="justify-content:space-between;font-size:12px;color:#0e9e6b;margin-top:4px;">
               <span id="invDiscountLabel">Discount</span><span id="invDiscountAmt">-₹0</span>
             </div>
-            <div class="inv-sub-row" id="invGstRow" style="display:none;justify-content:space-between;font-size:12px;color:#7a6a5a;margin-top:4px;">
+            <div class="inv-sub-row hidden" id="invGstRow" style="justify-content:space-between;font-size:12px;color:#7a6a5a;margin-top:4px;">
               <span id="invGstLabel">GST</span><span id="invGstAmt">₹0</span>
             </div>
-            <div class="inv-sub-row" id="invCourierRow" style="display:none;justify-content:space-between;font-size:12px;color:#7a6a5a;margin-top:4px;">
+            <div class="inv-sub-row hidden" id="invCourierRow" style="justify-content:space-between;font-size:12px;color:#7a6a5a;margin-top:4px;">
               <span>Courier Charge</span><span id="invCourierAmt">₹0</span>
             </div>
             <div class="inv-total">
@@ -948,7 +958,7 @@
 
       <div class="section-title">🔍 Customer Lookup</div>
       <div class="cust-lookup-card">
-        <input type="text" id="custLookupInput" placeholder="Phone number or name podunga..." oninput="searchCustomerHistory()">
+        <input type="text" id="custLookupInput" placeholder="Enter phone number or name..." oninput="searchCustomerHistory()">
       </div>
       <div id="custLookupResults"></div>
 
@@ -1016,7 +1026,7 @@
       <div class="section-title">🖼️ Shop Logo</div>
       <div class="logo-settings-card">
         <img class="logo-img logo-preview" id="logoPreview" alt="Current logo">
-        <p class="logo-hint">Neenga eppo venumna logo maathalaam. Puthu image select pannunga (JPG/PNG).</p>
+        <p class="logo-hint">You can change the logo anytime. Select a new image (JPG/PNG).</p>
         <label class="upload-btn ripple-btn" for="logoUploadInput">📤 Upload New Logo</label>
         <input type="file" id="logoUploadInput" accept="image/*" style="display:none;" onchange="handleLogoUpload(event)">
         <button class="reset-logo-btn" onclick="resetLogo()">↺ Reset to Default Logo</button>
@@ -1024,7 +1034,7 @@
 
       <div class="section-title">🧾 Invoice Numbering</div>
       <div class="logo-settings-card">
-        <p class="logo-hint">Next bill-ku enna invoice number varanum nu ingu set pannalam. Edhachum mistake irundha, ippodiye correct pannikalam.</p>
+        <p class="logo-hint">Set what invoice number the next bill should start from. If there's ever a mistake, you can correct it here anytime.</p>
         <div class="goal-input-row">
           <span>KCS</span>
           <input type="number" id="invoiceCounterInput" min="1">
@@ -1035,7 +1045,7 @@
 
       <div class="section-title">🎯 Daily Sales Goal</div>
       <div class="logo-settings-card">
-        <p class="logo-hint">Every day-oda target amount set pannunga. Dashboard-la progress bar-a track pannalam.</p>
+        <p class="logo-hint">Set your target amount for each day. Track progress with the bar on the Dashboard.</p>
         <div class="goal-input-row">
           <span>₹</span>
           <input type="number" id="dailyGoalInput" min="0" value="0">
@@ -1045,7 +1055,7 @@
 
       <div class="section-title">🔑 Change Admin Password</div>
       <div class="logo-settings-card">
-        <p class="logo-hint">Puthu password podunga (kaditta maranthuduna, reset panna mudiyathu — nalla nyabagam vachikonga).</p>
+        <p class="logo-hint">Set a new password (there's no way to reset it if you forget, so remember it well).</p>
         <div class="goal-input-row">
           <input type="text" id="newPasswordInput" placeholder="New password">
           <button class="save-goal-btn ripple-btn" onclick="changeAdminPassword()">Update</button>
@@ -1321,7 +1331,7 @@ function renderLowStock() {
   if (!wrap) return;
   const lowItems = catalog.filter(c => c.stock != null && c.stock <= LOW_STOCK_THRESHOLD).sort((a, b) => a.stock - b.stock);
   if (!lowItems.length) {
-    wrap.innerHTML = '<div class="empty-msg">Ella sarees-um stock nalla irukku 👍</div>';
+    wrap.innerHTML = '<div class="empty-msg">All sarees are well stocked 👍</div>';
     return;
   }
   wrap.innerHTML = lowItems.map(item => `
@@ -1363,11 +1373,11 @@ function startBilling() {
   const err = document.getElementById('custErr');
 
   if (!name || !phone || !ooru) {
-    err.textContent = '⚠️ Ella details um podunga (Name, Phone, Village/City).';
+    err.textContent = '⚠️ Please fill in all details (Name, Phone, Village/City).';
     return;
   }
   if (phone.length < 10) {
-    err.textContent = '⚠️ Sariyana 10-digit phone number podunga.';
+    err.textContent = '⚠️ Please enter a valid 10-digit phone number.';
     return;
   }
   err.textContent = '';
@@ -1492,7 +1502,7 @@ function addToBill(id, evt) {
   if (item && item.stock != null) {
     const current = bill[id] || 0;
     if (current + activeQty > item.stock) {
-      showToast(item.stock <= 0 ? '⚠️ Stock illa (out of stock)' : `⚠️ Stock-la ${item.stock} mattum thaan irukku`);
+      showToast(item.stock <= 0 ? '⚠️ Out of stock' : `⚠️ Only ${item.stock} left in stock`);
       return;
     }
   }
@@ -1575,7 +1585,7 @@ function renderBill() {
   list.innerHTML = '';
 
   if (ids.length === 0) {
-    list.innerHTML = '<div class="empty-msg" style="margin-top:30px;">Innum saree select pannala</div>';
+    list.innerHTML = '<div class="empty-msg" style="margin-top:30px;">No sarees selected yet</div>';
   }
 
   ids.forEach(id => {
@@ -1630,7 +1640,7 @@ function stepQty(id, delta) {
   if (delta > 0) {
     const item = catalog.find(c => c.id == id);
     if (item && item.stock != null && (bill[id] || 0) + delta > item.stock) {
-      showToast(`⚠️ Stock-la ${item.stock} mattum thaan irukku`);
+      showToast(`⚠️ Only ${item.stock} left in stock`);
       return;
     }
   }
@@ -1684,26 +1694,26 @@ function generateInvoice() {
   document.getElementById('invSubtotal').textContent = '₹' + subtotal.toLocaleString('en-IN');
   const discRow = document.getElementById('invDiscountRow');
   if (discountAmt > 0) {
-    discRow.style.display = 'flex';
+    discRow.classList.remove('hidden');
     document.getElementById('invDiscountLabel').textContent = `Discount (${discountPct}%)`;
     document.getElementById('invDiscountAmt').textContent = '-₹' + discountAmt.toLocaleString('en-IN');
   } else {
-    discRow.style.display = 'none';
+    discRow.classList.add('hidden');
   }
   const gstRow = document.getElementById('invGstRow');
   if (gstAmt > 0) {
-    gstRow.style.display = 'flex';
+    gstRow.classList.remove('hidden');
     document.getElementById('invGstLabel').textContent = `GST (${gstPct}%)`;
     document.getElementById('invGstAmt').textContent = '₹' + gstAmt.toLocaleString('en-IN');
   } else {
-    gstRow.style.display = 'none';
+    gstRow.classList.add('hidden');
   }
   const courierRow = document.getElementById('invCourierRow');
   if (courierAmt > 0) {
-    courierRow.style.display = 'flex';
+    courierRow.classList.remove('hidden');
     document.getElementById('invCourierAmt').textContent = '₹' + courierAmt.toLocaleString('en-IN');
   } else {
-    courierRow.style.display = 'none';
+    courierRow.classList.add('hidden');
   }
   document.getElementById('invTotal').textContent = '₹' + finalTotal.toLocaleString('en-IN');
 
@@ -1752,18 +1762,18 @@ function shareOnWhatsApp() {
 
   const subtotal = document.getElementById('invSubtotal').textContent;
   let extraLines = '';
-  if (document.getElementById('invDiscountRow').style.display !== 'none') {
+  if (!document.getElementById('invDiscountRow').classList.contains('hidden')) {
     extraLines += `${document.getElementById('invDiscountLabel').textContent}: ${document.getElementById('invDiscountAmt').textContent}\n`;
   }
-  if (document.getElementById('invGstRow').style.display !== 'none') {
+  if (!document.getElementById('invGstRow').classList.contains('hidden')) {
     extraLines += `${document.getElementById('invGstLabel').textContent}: ${document.getElementById('invGstAmt').textContent}\n`;
   }
-  if (document.getElementById('invCourierRow').style.display !== 'none') {
+  if (!document.getElementById('invCourierRow').classList.contains('hidden')) {
     extraLines += `Courier Charge: ${document.getElementById('invCourierAmt').textContent}\n`;
   }
   const total = document.getElementById('invTotal').textContent;
 
-  const msg = `*KRISHNU COTTON SAREES*\nBill No: ${invNo}\nDate: ${date}\n\nVanakkam ${name}, ungaloda bill details:\n\n${rows}\n\nSubtotal: ${subtotal}\n${extraLines}*Total: ${total}*\n\nThank you for shopping with us! 🙏`;
+  const msg = `*KRISHNU COTTON SAREES*\nBill No: ${invNo}\nDate: ${date}\n\nHi ${name}, here are your bill details:\n\n${rows}\n\nSubtotal: ${subtotal}\n${extraLines}*Total: ${total}*\n\nThank you for shopping with us! 🙏`;
 
   const waUrl = `https://wa.me/91${phoneRaw}?text=${encodeURIComponent(msg)}`;
   window.open(waUrl, '_blank');
@@ -1905,7 +1915,7 @@ function updateNextInvoicePreview() {
 
 function saveInvoiceCounter() {
   const val = parseInt(document.getElementById('invoiceCounterInput').value, 10);
-  if (isNaN(val) || val < 1) { showToast('⚠️ Correct number podunga (1 or more)'); return; }
+  if (isNaN(val) || val < 1) { showToast('⚠️ Please enter a valid number (1 or more)'); return; }
   meta.invoiceCounter = val;
   saveMeta(meta);
   updateNextInvoicePreview();
@@ -1934,7 +1944,7 @@ function handleLogoUpload(event) {
         document.getElementById('logoPreview').src = dataUrl;
         showToast('✅ Logo updated successfully!');
       } catch (err) {
-        showToast('⚠️ Image romba periyathu, chinna image try pannunga');
+        showToast('⚠️ Image too large, try a smaller one');
       }
     };
     img.src = e.target.result;
@@ -1962,7 +1972,7 @@ function saveGoal() {
 
 function changeAdminPassword() {
   const val = document.getElementById('newPasswordInput').value.trim();
-  if (!val) { showToast('⚠️ Password podunga'); return; }
+  if (!val) { showToast('⚠️ Please enter a password'); return; }
   meta.adminPassword = val;
   saveMeta(meta);
   document.getElementById('newPasswordInput').value = '';
@@ -1970,7 +1980,7 @@ function changeAdminPassword() {
 }
 
 function exportSalesCSV() {
-  if (sales.length === 0) { showToast('⚠️ Innum sales illa'); return; }
+  if (sales.length === 0) { showToast('⚠️ No sales yet'); return; }
   let csv = 'Invoice No,Date,Customer Name,Phone,Village/City,Saree,Meters,Price,Qty,Amount,GST,Courier Charge,Bill Total\n';
   sales.forEach(s => {
     s.items.forEach(it => {
@@ -2026,26 +2036,26 @@ function printTransaction(id, opts) {
 
   const discRow = document.getElementById('invDiscountRow');
   if (sale.discountAmt > 0) {
-    discRow.style.display = 'flex';
+    discRow.classList.remove('hidden');
     document.getElementById('invDiscountLabel').textContent = `Discount (${sale.discountPct || 0}%)`;
     document.getElementById('invDiscountAmt').textContent = '-₹' + sale.discountAmt.toLocaleString('en-IN');
   } else {
-    discRow.style.display = 'none';
+    discRow.classList.add('hidden');
   }
   const gstRow = document.getElementById('invGstRow');
   if (sale.gstAmt > 0) {
-    gstRow.style.display = 'flex';
+    gstRow.classList.remove('hidden');
     document.getElementById('invGstLabel').textContent = `GST (${sale.gstPct || 0}%)`;
     document.getElementById('invGstAmt').textContent = '₹' + sale.gstAmt.toLocaleString('en-IN');
   } else {
-    gstRow.style.display = 'none';
+    gstRow.classList.add('hidden');
   }
   const courierRow = document.getElementById('invCourierRow');
   if (sale.courierAmt > 0) {
-    courierRow.style.display = 'flex';
+    courierRow.classList.remove('hidden');
     document.getElementById('invCourierAmt').textContent = '₹' + sale.courierAmt.toLocaleString('en-IN');
   } else {
-    courierRow.style.display = 'none';
+    courierRow.classList.add('hidden');
   }
   document.getElementById('invTotal').textContent = '₹' + sale.totalAmount.toLocaleString('en-IN');
 
@@ -2225,7 +2235,7 @@ function renderManage() {
 function saveSareePrice(id) {
   const input = document.getElementById('price-' + id);
   const newPrice = parseFloat(input.value);
-  if (isNaN(newPrice) || newPrice <= 0) { showToast('⚠️ Correct price podunga'); return; }
+  if (isNaN(newPrice) || newPrice <= 0) { showToast('⚠️ Please enter a valid price'); return; }
   const stockInput = document.getElementById('stock-' + id);
   const stockVal = stockInput.value.trim();
   const item = catalog.find(c => c.id === id);
@@ -2262,7 +2272,7 @@ function addNewSaree() {
   const stockRaw = document.getElementById('newSareeStock').value.trim();
 
   if (!name || !meters || isNaN(price) || price <= 0) {
-    showToast('⚠️ Ella fields um sariya nirappunga');
+    showToast('⚠️ Please fill in all fields correctly');
     return;
   }
   const newId = catalog.length ? Math.max(...catalog.map(c => c.id)) + 1 : 1;
