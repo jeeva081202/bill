@@ -279,6 +279,7 @@
   .card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,0,0,0.45); border-color: rgba(240,193,75,0.5); }
   .card:active { transform: scale(0.96); }
   .card.has-qty { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold) inset, 0 6px 20px rgba(240,193,75,0.28); }
+  .card.out-of-stock { opacity: 0.55; filter: grayscale(0.4); }
   .card.pop { animation: cardPop .4s ease; }
   .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .meter-badge { background: linear-gradient(120deg,var(--emerald-deep),#062018); color: var(--emerald); font-size: 10px; font-weight: 800; padding: 4px 9px; border-radius: 6px; letter-spacing: .5px; white-space: nowrap; }
@@ -448,6 +449,7 @@
   .inv-actions button:active { transform: scale(0.95); }
   .btn-print { background: linear-gradient(120deg,var(--ruby-deep),var(--ruby)); color: #fff; box-shadow: 0 6px 20px rgba(143,14,42,0.4); }
   .btn-new { background: #f3ecdb; color: #5c4a30; }
+  .btn-whatsapp { background: linear-gradient(120deg,#1ea952,#25d366); color: #fff; box-shadow: 0 6px 20px rgba(37,211,102,0.4); }
 
   /* ---------- Admin screens ---------- */
   .admin-login-screen {
@@ -538,6 +540,8 @@
   }
   .manage-row .m-name { flex: 1; font-size: 12px; font-weight: 700; color: var(--text-light); }
   .manage-row input.m-price { width: 72px; padding: 7px 8px; border-radius: 7px; border: 1px solid rgba(240,193,75,0.3); background: #150a1e; color: var(--gold); font-weight: 700; font-size: 12px; text-align: right; }
+  .manage-row input.m-stock { width: 54px; padding: 7px 6px; border-radius: 7px; border: 1px solid rgba(34,224,160,0.35); background: #150a1e; color: var(--emerald); font-weight: 700; font-size: 12px; text-align: right; }
+  .manage-row .m-stock-label { font-size: 9.5px; color: var(--text-dim); flex-shrink: 0; }
   .manage-row button {
     width: 28px; height: 28px; border-radius: 8px; border: none; font-size: 13px; cursor: pointer; flex-shrink: 0;
   }
@@ -674,6 +678,43 @@
     table.inv-table th, table.inv-table td { display: table-cell !important; }
   }
 
+  /* ---------- Customer history / lookup ---------- */
+  .hist-link { color: var(--emerald); text-decoration: underline; cursor: pointer; font-weight: 700; margin-left: 6px; white-space: nowrap; }
+  .cust-history-list { margin-top: 8px; text-align: left; }
+  .hist-row {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(240,193,75,0.2); border-radius: 10px;
+    padding: 8px 12px; margin-bottom: 6px; cursor: pointer; font-size: 11.5px;
+  }
+  .hist-top { display: flex; justify-content: space-between; color: var(--gold); font-weight: 700; margin-bottom: 3px; }
+  .hist-bottom { display: flex; justify-content: space-between; color: var(--text-dim); }
+  .hist-amt { color: var(--emerald); font-weight: 800; }
+
+  .cust-lookup-card {
+    background: linear-gradient(120deg,rgba(240,193,75,0.1),rgba(34,224,160,0.06));
+    border: 1px solid rgba(240,193,75,0.3); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px;
+  }
+  .cust-lookup-card input {
+    width: 100%; padding: 9px 10px; border-radius: 8px; border: 1px solid rgba(240,193,75,0.35);
+    background: #150a1e; color: #fff; font-size: 13px; outline: none;
+  }
+  .cust-lookup-group {
+    background: linear-gradient(160deg,#241130,#1a0e24); border: 1px solid rgba(240,193,75,0.18);
+    border-radius: 12px; padding: 12px; margin-bottom: 10px;
+  }
+  .cust-lookup-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--text-light); margin-bottom: 4px; }
+  .cust-lookup-head span { font-size: 11px; color: var(--text-dim); }
+  .cust-lookup-summary { font-size: 11px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+
+  .low-stock-row {
+    display: flex; justify-content: space-between; align-items: center; background: linear-gradient(160deg,#2e1414,#1a0e0e);
+    border: 1px solid rgba(255,46,99,0.3); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; font-size: 12px;
+  }
+  .low-stock-row .lsr-name { font-weight: 700; color: var(--text-light); }
+  .low-stock-row .lsr-meters { font-size: 10px; color: var(--text-dim); }
+  .low-stock-row .lsr-qty { font-weight: 800; }
+  .low-stock-row .lsr-qty.zero { color: var(--ruby); }
+  .low-stock-row .lsr-qty.low { color: var(--gold); }
+
   /* ---------- GST / Courier fee rows (billing screen) ---------- */
   .fee-card {
     background: linear-gradient(120deg,rgba(240,193,75,0.14),rgba(255,46,99,0.08));
@@ -732,6 +773,7 @@
         <label>Phone Number</label>
         <input type="tel" id="custPhone" placeholder="Enter 10-digit phone number" maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'')" onblur="checkReturningCustomer()">
         <div class="returning-badge" id="returningBadge"></div>
+        <div class="cust-history-list" id="custHistoryList" style="display:none;"></div>
       </div>
       <div class="field" style="animation-delay:.25s">
         <label>Village / City</label>
@@ -864,7 +906,8 @@
     </div>
     <div class="inv-actions">
       <button class="btn-new ripple-btn" onclick="newBill()">+ New Bill</button>
-      <button class="btn-print ripple-btn" onclick="window.print()">🖨️ Print Receipt</button>
+      <button class="btn-whatsapp ripple-btn" onclick="shareOnWhatsApp()">📤 WhatsApp</button>
+      <button class="btn-print ripple-btn" onclick="window.print()">🖨️ Print</button>
     </div>
   </div>
 
@@ -903,6 +946,12 @@
         <div class="goal-bottom"><span id="goalProgressText">₹0 / ₹0</span><span id="goalPct">0%</span></div>
       </div>
 
+      <div class="section-title">🔍 Customer Lookup</div>
+      <div class="cust-lookup-card">
+        <input type="text" id="custLookupInput" placeholder="Phone number or name podunga..." oninput="searchCustomerHistory()">
+      </div>
+      <div id="custLookupResults"></div>
+
       <div class="stat-grid">
         <div class="stat-card" style="animation-delay:.02s">
           <div class="label">Today</div>
@@ -934,6 +983,9 @@
       <div class="section-title">🏆 Top Selling Sarees</div>
       <div id="topSellers"></div>
 
+      <div class="section-title">🔻 Low Stock Sarees</div>
+      <div id="lowStockList"></div>
+
       <div class="section-title">🧾 Recent Transactions</div>
       <div id="recentTxns"></div>
 
@@ -951,6 +1003,9 @@
         <div class="frow">
           <input type="text" id="newSareeMeters" placeholder="Meters (5.50M / 6.20M)" list="meterSuggestions">
           <input type="number" id="newSareePrice" placeholder="Price ₹">
+        </div>
+        <div class="frow">
+          <input type="number" id="newSareeStock" placeholder="Stock qty (optional, blank = unlimited)">
         </div>
         <datalist id="meterSuggestions"></datalist>
         <button onclick="addNewSaree()">+ Add Saree to Catalog</button>
@@ -1114,6 +1169,7 @@ let currentAdminTab = 'dash';
 let discountPct = 0;
 let gstPct = 0;
 let courierCharge = 0;
+const LOW_STOCK_THRESHOLD = 5;
 
 function meterOptions() { return ['ALL', ...Array.from(new Set(catalog.map(c => c.meters)))]; }
 
@@ -1187,20 +1243,96 @@ function playSuccessSound() {
   setTimeout(() => playTone(784, 0.25, 'sine', 0.09), 240);
 }
 
-// ---------------- Returning customer detection ----------------
+// ---------------- Returning customer detection / history ----------------
+let lastCheckedPhone = null;
 function checkReturningCustomer() {
   const phone = document.getElementById('custPhone').value.trim();
+  if (phone === lastCheckedPhone) return; // avoid rebuilding the badge (and killing the History link) on every re-blur
+  lastCheckedPhone = phone;
   const badge = document.getElementById('returningBadge');
+  const historyBox = document.getElementById('custHistoryList');
   badge.className = 'returning-badge';
-  badge.textContent = '';
+  badge.innerHTML = '';
+  historyBox.innerHTML = '';
+  historyBox.style.display = 'none';
   if (phone.length < 8) return;
-  const prevSale = [...sales].reverse().find(s => s.customer.phone === phone);
-  if (prevSale) {
-    document.getElementById('custName').value = prevSale.customer.name;
-    document.getElementById('custOoru').value = prevSale.customer.ooru;
-    badge.textContent = `🎉 Welcome back, ${prevSale.customer.name}! (${sales.filter(s => s.customer.phone === phone).length} previous bills)`;
+  const custSales = sales.filter(s => s.customer.phone === phone);
+  if (custSales.length) {
+    const latest = custSales[custSales.length - 1];
+    document.getElementById('custName').value = latest.customer.name;
+    document.getElementById('custOoru').value = latest.customer.ooru;
+    const totalSpent = custSales.reduce((sum, s) => sum + s.totalAmount, 0);
+    badge.innerHTML = `🎉 Welcome back, ${latest.customer.name}! ${custSales.length} bills · ₹${totalSpent.toLocaleString('en-IN')} total<span class="hist-link" onclick="toggleCustHistory('${phone}')">📜 History</span>`;
     badge.classList.add('show');
   }
+}
+
+function toggleCustHistory(phone) {
+  const box = document.getElementById('custHistoryList');
+  if (box.style.display === 'block') { box.style.display = 'none'; return; }
+  const custSales = sales.filter(s => s.customer.phone === phone).slice().reverse();
+  box.innerHTML = custSales.map(s => `
+    <div class="hist-row" onclick="printTransaction('${s.id}', {returnTo:'screenCustomer', autoPrint:false})">
+      <div class="hist-top"><b>${s.id}</b><span>${new Date(s.date).toLocaleDateString('en-IN')}</span></div>
+      <div class="hist-bottom"><span>${s.totalQty} sarees</span><span class="hist-amt">₹${s.totalAmount.toLocaleString('en-IN')}</span></div>
+    </div>
+  `).join('') || '<div class="empty-msg">No past bills</div>';
+  box.style.display = 'block';
+}
+
+function searchCustomerHistory() {
+  const q = document.getElementById('custLookupInput').value.trim().toLowerCase();
+  const results = document.getElementById('custLookupResults');
+  results.innerHTML = '';
+  if (!q) return;
+  const matches = {};
+  sales.forEach(s => {
+    if (s.customer.phone.toLowerCase().includes(q) || s.customer.name.toLowerCase().includes(q)) {
+      const key = s.customer.phone;
+      if (!matches[key]) matches[key] = { name: s.customer.name, phone: s.customer.phone, ooru: s.customer.ooru, sales: [] };
+      matches[key].sales.push(s);
+    }
+  });
+  const keys = Object.keys(matches);
+  if (!keys.length) { results.innerHTML = '<div class="empty-msg">No matching customer</div>'; return; }
+  keys.forEach(key => {
+    const c = matches[key];
+    const totalSpent = c.sales.reduce((sum, s) => sum + s.totalAmount, 0);
+    const rowsHtml = c.sales.slice().reverse().map(s => `
+      <div class="hist-row" onclick="printTransaction('${s.id}')">
+        <div class="hist-top"><b>${s.id}</b><span>${new Date(s.date).toLocaleDateString('en-IN')}</span></div>
+        <div class="hist-bottom"><span>${s.totalQty} sarees</span><span class="hist-amt">₹${s.totalAmount.toLocaleString('en-IN')}</span></div>
+      </div>
+    `).join('');
+    const card = document.createElement('div');
+    card.className = 'cust-lookup-group';
+    card.innerHTML = `
+      <div class="cust-lookup-head"><b>${c.name}</b><span>${c.phone} · ${c.ooru}</span></div>
+      <div class="cust-lookup-summary">${c.sales.length} bills · ₹${totalSpent.toLocaleString('en-IN')} total spent</div>
+      ${rowsHtml}
+    `;
+    results.appendChild(card);
+  });
+}
+
+// ---------------- Low stock ----------------
+function renderLowStock() {
+  const wrap = document.getElementById('lowStockList');
+  if (!wrap) return;
+  const lowItems = catalog.filter(c => c.stock != null && c.stock <= LOW_STOCK_THRESHOLD).sort((a, b) => a.stock - b.stock);
+  if (!lowItems.length) {
+    wrap.innerHTML = '<div class="empty-msg">Ella sarees-um stock nalla irukku 👍</div>';
+    return;
+  }
+  wrap.innerHTML = lowItems.map(item => `
+    <div class="low-stock-row">
+      <div>
+        <div class="lsr-name">${item.name}</div>
+        <div class="lsr-meters">${item.meters} · ₹${item.price}</div>
+      </div>
+      <div class="lsr-qty ${item.stock <= 0 ? 'zero' : 'low'}">${item.stock <= 0 ? 'OUT OF STOCK' : item.stock + ' left'}</div>
+    </div>
+  `).join('');
 }
 
 function spawnSparkles(screenId, count) {
@@ -1332,14 +1464,17 @@ function renderCatalog(justAddedId) {
 
   items.forEach((item, idx) => {
     const qty = bill[item.id] || 0;
+    const tracked = item.stock != null;
+    const outOfStock = tracked && item.stock <= 0;
+    const lowStock = tracked && !outOfStock && item.stock <= LOW_STOCK_THRESHOLD;
     const card = document.createElement('div');
-    card.className = 'card' + (qty > 0 ? ' has-qty' : '') + (item.id === justAddedId ? ' pop' : '');
+    card.className = 'card' + (qty > 0 ? ' has-qty' : '') + (item.id === justAddedId ? ' pop' : '') + (outOfStock ? ' out-of-stock' : '');
     card.style.animationDelay = (idx * 0.03) + 's';
     card.innerHTML = `
       <button class="minus-btn" onclick="event.stopPropagation(); decrement(${item.id})">−</button>
       <div class="card-top">
         <span class="meter-badge">${item.meters}</span>
-        <span class="qty-badge ${qty > 0 ? 'show' : ''}">${qty}x in bill</span>
+        ${outOfStock ? `<span class="qty-badge show" style="background:linear-gradient(120deg,var(--ruby),var(--ruby-deep));color:#fff;">OUT OF STOCK</span>` : lowStock ? `<span class="qty-badge show" style="background:linear-gradient(120deg,#ffb347,var(--gold-deep));">${item.stock} left</span>` : `<span class="qty-badge ${qty > 0 ? 'show' : ''}">${qty}x in bill</span>`}
       </div>
       <div class="card-name">${item.name}</div>
       <div class="card-bottom">
@@ -1353,6 +1488,14 @@ function renderCatalog(justAddedId) {
 }
 
 function addToBill(id, evt) {
+  const item = catalog.find(c => c.id === id);
+  if (item && item.stock != null) {
+    const current = bill[id] || 0;
+    if (current + activeQty > item.stock) {
+      showToast(item.stock <= 0 ? '⚠️ Stock illa (out of stock)' : `⚠️ Stock-la ${item.stock} mattum thaan irukku`);
+      return;
+    }
+  }
   bill[id] = (bill[id] || 0) + activeQty;
   if (evt) flyPlusIndicator(evt.currentTarget, activeQty);
   playAddSound();
@@ -1484,6 +1627,13 @@ function animateCounter(target) {
 }
 
 function stepQty(id, delta) {
+  if (delta > 0) {
+    const item = catalog.find(c => c.id == id);
+    if (item && item.stock != null && (bill[id] || 0) + delta > item.stock) {
+      showToast(`⚠️ Stock-la ${item.stock} mattum thaan irukku`);
+      return;
+    }
+  }
   bill[id] = (bill[id] || 0) + delta;
   if (bill[id] <= 0) delete bill[id];
   renderCatalog();
@@ -1519,7 +1669,14 @@ function generateInvoice() {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${idx + 1}</td><td>${item.name}<br><span class="mtr-sub">${item.meters}</span></td><td>${qty}</td><td>₹${item.price}</td><td>₹${amount}</td>`;
     tbody.appendChild(tr);
+
+    // Deduct sold quantity from tracked stock
+    if (item.stock != null) {
+      item.stock = Math.max(0, item.stock - qty);
+    }
   });
+  saveCatalog(catalog);
+  renderLowStock();
 
   const { totalCount, subtotal, discountAmt, gstAmt, courierAmt, finalTotal } = billTotals();
 
@@ -1577,12 +1734,48 @@ function generateInvoice() {
   playSuccessSound();
 }
 
+function shareOnWhatsApp() {
+  const phoneRaw = document.getElementById('invPhone').textContent.replace(/[^0-9]/g, '');
+  if (phoneRaw.length !== 10) { showToast('⚠️ Valid 10-digit phone number illa'); return; }
+
+  const name = document.getElementById('invName').textContent;
+  const invNo = document.getElementById('invNo').textContent;
+  const date = document.getElementById('invDate').textContent;
+
+  const rows = Array.from(document.querySelectorAll('#invTableBody tr')).map(tr => {
+    const cells = tr.querySelectorAll('td');
+    const sareeName = cells[1].childNodes[0] ? cells[1].childNodes[0].textContent.trim() : '';
+    const qty = cells[2].textContent;
+    const amt = cells[4].textContent;
+    return `${sareeName} x${qty} = ${amt}`;
+  }).join('\n');
+
+  const subtotal = document.getElementById('invSubtotal').textContent;
+  let extraLines = '';
+  if (document.getElementById('invDiscountRow').style.display !== 'none') {
+    extraLines += `${document.getElementById('invDiscountLabel').textContent}: ${document.getElementById('invDiscountAmt').textContent}\n`;
+  }
+  if (document.getElementById('invGstRow').style.display !== 'none') {
+    extraLines += `${document.getElementById('invGstLabel').textContent}: ${document.getElementById('invGstAmt').textContent}\n`;
+  }
+  if (document.getElementById('invCourierRow').style.display !== 'none') {
+    extraLines += `Courier Charge: ${document.getElementById('invCourierAmt').textContent}\n`;
+  }
+  const total = document.getElementById('invTotal').textContent;
+
+  const msg = `*KRISHNU COTTON SAREES*\nBill No: ${invNo}\nDate: ${date}\n\nVanakkam ${name}, ungaloda bill details:\n\n${rows}\n\nSubtotal: ${subtotal}\n${extraLines}*Total: ${total}*\n\nThank you for shopping with us! 🙏`;
+
+  const waUrl = `https://wa.me/91${phoneRaw}?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
+}
+
 function newBill() {
   if (reprintMode) {
     reprintMode = false;
     document.querySelector('.btn-new').textContent = '+ New Bill';
-    showScreen('screenAdmin');
-    switchAdminTab('dash');
+    showScreen(reprintReturnTo);
+    if (reprintReturnTo === 'screenAdmin') switchAdminTab('dash');
+    reprintReturnTo = 'screenAdmin';
     return;
   }
   bill = {};
@@ -1598,6 +1791,9 @@ function newBill() {
   document.getElementById('gstInput').value = 0;
   document.getElementById('courierInput').value = 0;
   document.getElementById('returningBadge').textContent = '';
+  document.getElementById('custHistoryList').style.display = 'none';
+  document.getElementById('custHistoryList').innerHTML = '';
+  lastCheckedPhone = null;
   activeFilter = 'ALL';
   activeQty = 1;
   showScreen('screenCustomer');
@@ -1791,6 +1987,7 @@ function exportSalesCSV() {
 }
 
 let reprintMode = false;
+let reprintReturnTo = 'screenAdmin';
 
 function deleteTransaction(id) {
   if (!confirm('Delete this bill (' + id + ') permanently? This cannot be undone.')) return;
@@ -1801,7 +1998,10 @@ function deleteTransaction(id) {
   showToast('🗑️ Bill deleted');
 }
 
-function printTransaction(id) {
+function printTransaction(id, opts) {
+  opts = opts || {};
+  const returnTo = opts.returnTo || 'screenAdmin';
+  const autoPrint = opts.autoPrint !== false;
   const sale = sales.find(s => s.id === id);
   if (!sale) return;
 
@@ -1850,9 +2050,10 @@ function printTransaction(id) {
   document.getElementById('invTotal').textContent = '₹' + sale.totalAmount.toLocaleString('en-IN');
 
   reprintMode = true;
-  document.querySelector('.btn-new').textContent = '← Back to Dashboard';
+  reprintReturnTo = returnTo;
+  document.querySelector('.btn-new').textContent = returnTo === 'screenCustomer' ? '← Back' : '← Back to Dashboard';
   showScreen('screenInvoice');
-  setTimeout(() => window.print(), 350);
+  if (autoPrint) setTimeout(() => window.print(), 350);
 }
 
 function startOfWeek(date) {
@@ -1865,6 +2066,9 @@ function startOfWeek(date) {
 }
 
 function renderDashboard() {
+  renderLowStock();
+  document.getElementById('custLookupInput').value = '';
+  document.getElementById('custLookupResults').innerHTML = '';
   const now = new Date();
   const sow = startOfWeek(now);
   const stats = {
@@ -1996,8 +2200,11 @@ function renderManage() {
     groups[meterKey].forEach(item => {
       const row = document.createElement('div');
       row.className = 'manage-row';
+      const stockVal = item.stock != null ? item.stock : '';
       row.innerHTML = `
-        <span class="m-name">${item.name}</span>
+        <span class="m-name">${item.name}${item.stock != null ? (item.stock <= 0 ? ' <span style="color:var(--ruby);font-size:10px;">(OUT)</span>' : item.stock <= LOW_STOCK_THRESHOLD ? ` <span style="color:var(--gold);font-size:10px;">(${item.stock} left)</span>` : '') : ''}</span>
+        <span class="m-stock-label">Stock</span>
+        <input type="number" class="m-stock" id="stock-${item.id}" placeholder="∞" value="${stockVal}">
         <input type="number" class="m-price" id="price-${item.id}" value="${item.price}">
         <button class="btn-save-row" onclick="saveSareePrice(${item.id})">💾</button>
         <button class="btn-del-row" onclick="deleteSaree(${item.id})">✕</button>
@@ -2019,11 +2226,22 @@ function saveSareePrice(id) {
   const input = document.getElementById('price-' + id);
   const newPrice = parseFloat(input.value);
   if (isNaN(newPrice) || newPrice <= 0) { showToast('⚠️ Correct price podunga'); return; }
+  const stockInput = document.getElementById('stock-' + id);
+  const stockVal = stockInput.value.trim();
   const item = catalog.find(c => c.id === id);
   if (item) {
     item.price = newPrice;
+    if (stockVal === '') {
+      delete item.stock;
+    } else {
+      const newStock = parseInt(stockVal, 10);
+      item.stock = isNaN(newStock) || newStock < 0 ? 0 : newStock;
+    }
     saveCatalog(catalog);
-    showToast('✅ ' + item.name + ' price updated!');
+    renderManage();
+    renderCatalog();
+    renderLowStock();
+    showToast('✅ ' + item.name + ' updated!');
   }
 }
 
@@ -2041,17 +2259,25 @@ function addNewSaree() {
   const name = document.getElementById('newSareeName').value.trim();
   const meters = document.getElementById('newSareeMeters').value.trim();
   const price = parseFloat(document.getElementById('newSareePrice').value);
+  const stockRaw = document.getElementById('newSareeStock').value.trim();
 
   if (!name || !meters || isNaN(price) || price <= 0) {
     showToast('⚠️ Ella fields um sariya nirappunga');
     return;
   }
   const newId = catalog.length ? Math.max(...catalog.map(c => c.id)) + 1 : 1;
-  catalog.push({ id: newId, meters, name: name.toUpperCase(), price });
+  const newItem = { id: newId, meters, name: name.toUpperCase(), price };
+  if (stockRaw !== '') {
+    const stockNum = parseInt(stockRaw, 10);
+    newItem.stock = isNaN(stockNum) || stockNum < 0 ? 0 : stockNum;
+  }
+  catalog.push(newItem);
   saveCatalog(catalog);
+  renderLowStock();
 
   document.getElementById('newSareeName').value = '';
   document.getElementById('newSareeMeters').value = '';
+  document.getElementById('newSareeStock').value = '';
   document.getElementById('newSareePrice').value = '';
 
   renderManage();
