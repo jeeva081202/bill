@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Krishnu Cotton Sarees — Smart Billing & Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -116,18 +116,21 @@
     animation: popIn 0.5s cubic-bezier(.2,.8,.3,1.2);
   }
 
-  /* On an actual phone, fill the whole screen like a real app —
-     no floating card, no black margins, no rounded "mockup" border.
-     The desktop phone-mockup look above only applies on wider screens. */
-  @media (max-width: 640px) {
+  /* This app is built for mobile use only (Samsung Galaxy Ultra phones etc) —
+     fill the whole screen like a real installed app: no floating card,
+     no black margins, no rounded "mockup" border. Raised the breakpoint so
+     this full-bleed phone layout is what always renders, not just on narrow
+     screens. Safe-area insets keep content clear of notches / punch-holes /
+     the gesture bar on edge-to-edge phone screens. */
+  @media (max-width: 900px) {
     body { padding: 0; }
     .phone-frame { padding: 0; max-width: 100%; width: 100%; }
     .phone-frame::before { display: none; }
     .phone {
-      max-width: 100%; min-height: 100vh; border-radius: 0; box-shadow: none;
+      max-width: 100%; min-height: 100vh; min-height: 100dvh; border-radius: 0; box-shadow: none;
       animation: none;
     }
-    .screen { min-height: 100vh; }
+    .screen { min-height: 100vh; min-height: 100dvh; }
   }
 
   .screen { display: none; flex-direction: column; flex: 1; min-height: 92vh; position: relative; }
@@ -670,6 +673,67 @@
     table.inv-table tr { display: table-row !important; }
     table.inv-table th, table.inv-table td { display: table-cell !important; }
   }
+
+  /* ---------- Saree photo (customer card + admin manage row) ---------- */
+  .card-img {
+    width: 100%; height: 84px; object-fit: cover; border-radius: 10px;
+    margin-bottom: 8px; border: 1px solid rgba(240,193,75,0.25); background: #150a1e;
+  }
+  .card-img-ph {
+    width: 100%; height: 84px; border-radius: 10px; margin-bottom: 8px;
+    background: linear-gradient(160deg,#2a1436,#1a0e24); border: 1px dashed rgba(240,193,75,0.25);
+    display: flex; align-items: center; justify-content: center; font-size: 20px; opacity: 0.5;
+  }
+  .manage-row { flex-wrap: wrap; }
+  .manage-img-thumb {
+    width: 34px; height: 34px; border-radius: 8px; object-fit: cover;
+    border: 1px solid rgba(240,193,75,0.3); background: #150a1e; flex-shrink: 0;
+  }
+  .manage-img-ph {
+    width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+    background: #1a0e24; border: 1px dashed rgba(240,193,75,0.3);
+    display: flex; align-items: center; justify-content: center; font-size: 13px; opacity: 0.55;
+  }
+  .manage-img-upload-label {
+    font-size: 13px; cursor: pointer; padding: 6px 7px; border-radius: 7px;
+    background: rgba(34,224,160,0.12); border: 1px solid rgba(34,224,160,0.35); flex-shrink: 0;
+  }
+  .add-form .img-upload-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  }
+  .add-form .img-upload-btn {
+    flex-shrink: 0; font-size: 11px; font-weight: 700; color: var(--emerald);
+    background: rgba(34,224,160,0.12); border: 1px dashed rgba(34,224,160,0.4);
+    border-radius: 9px; padding: 9px 12px; cursor: pointer; text-align: center;
+  }
+  .add-form .img-upload-preview {
+    width: 40px; height: 40px; border-radius: 8px; object-fit: cover;
+    border: 1px solid rgba(240,193,75,0.3); display: none;
+  }
+
+  /* ---------- GST / Courier fee rows (billing screen) ---------- */
+  .fee-card {
+    background: linear-gradient(120deg,rgba(240,193,75,0.14),rgba(255,46,99,0.08));
+    border: 1px solid rgba(240,193,75,0.35); border-radius: 14px; padding: 12px 14px;
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px; animation: fadeSlideUp .3s ease;
+  }
+  .fee-card .label { font-size: 12px; font-weight: 700; color: var(--gold); flex-shrink: 0; }
+  .fee-card input {
+    width: 76px; padding: 7px 8px; border-radius: 8px; border: 1px solid rgba(240,193,75,0.4);
+    background: #150a1e; color: #fff; font-weight: 700; font-size: 13px; text-align: center; outline: none;
+  }
+  .fee-card .fee-hint { font-size: 10.5px; color: var(--text-dim); margin-left: auto; text-align: right; }
+
+  /* ---------- Mobile safe-area (Galaxy Ultra style edge-to-edge screens) ---------- */
+  @media (max-width: 900px) {
+    .header { padding-top: calc(14px + env(safe-area-inset-top)); }
+    .splash-screen { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+    .customer-screen, .admin-login-screen { padding-top: calc(20px + env(safe-area-inset-top)); }
+    .summary-bar { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+    .inv-actions { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+    .admin-header { padding-top: calc(12px + env(safe-area-inset-top)); }
+    body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+  }
 </style>
 </head>
 <body>
@@ -759,6 +823,16 @@
         <input type="number" id="discountInput" min="0" max="100" value="0" oninput="onDiscountChange()">
         <span class="save-text" id="saveText"></span>
       </div>
+      <div class="fee-card">
+        <span class="label">🧾 GST %</span>
+        <input type="number" id="gstInput" min="0" max="100" value="0" oninput="onGstChange()">
+        <span class="fee-hint">Add pannuna GST bill total-la serum</span>
+      </div>
+      <div class="fee-card">
+        <span class="label">🚚 Courier ₹</span>
+        <input type="number" id="courierInput" min="0" value="0" oninput="onCourierChange()">
+        <span class="fee-hint">Manual ah fill pannunga, last total-la add aagum</span>
+      </div>
       <div id="billList"></div>
     </div>
 
@@ -807,6 +881,12 @@
             </div>
             <div class="inv-sub-row" id="invDiscountRow" style="display:none;justify-content:space-between;font-size:12px;color:#0e9e6b;margin-top:4px;">
               <span id="invDiscountLabel">Discount</span><span id="invDiscountAmt">-₹0</span>
+            </div>
+            <div class="inv-sub-row" id="invGstRow" style="display:none;justify-content:space-between;font-size:12px;color:#7a6a5a;margin-top:4px;">
+              <span id="invGstLabel">GST</span><span id="invGstAmt">₹0</span>
+            </div>
+            <div class="inv-sub-row" id="invCourierRow" style="display:none;justify-content:space-between;font-size:12px;color:#7a6a5a;margin-top:4px;">
+              <span>Courier Charge</span><span id="invCourierAmt">₹0</span>
             </div>
             <div class="inv-total">
               <span>Total (<span id="invCount">0</span> sarees)</span>
@@ -908,6 +988,11 @@
         <div class="frow">
           <input type="text" id="newSareeMeters" placeholder="Meters (5.50M / 6.20M)" list="meterSuggestions">
           <input type="number" id="newSareePrice" placeholder="Price ₹">
+        </div>
+        <div class="img-upload-row">
+          <img class="img-upload-preview" id="newSareeImgPreview" alt="Preview">
+          <label class="img-upload-btn ripple-btn" for="newSareeImageInput" style="flex:1;">📷 Saree Photo (optional)</label>
+          <input type="file" id="newSareeImageInput" accept="image/*" style="display:none;" onchange="handleNewSareeImagePreview(event)">
         </div>
         <datalist id="meterSuggestions"></datalist>
         <button onclick="addNewSaree()">+ Add Saree to Catalog</button>
@@ -1069,6 +1154,8 @@ let activeQty = 1;
 let displayedTotal = 0;
 let currentAdminTab = 'dash';
 let discountPct = 0;
+let gstPct = 0;
+let courierCharge = 0;
 
 function meterOptions() { return ['ALL', ...Array.from(new Set(catalog.map(c => c.meters)))]; }
 
@@ -1292,6 +1379,7 @@ function renderCatalog(justAddedId) {
     card.style.animationDelay = (idx * 0.03) + 's';
     card.innerHTML = `
       <button class="minus-btn" onclick="event.stopPropagation(); decrement(${item.id})">−</button>
+      ${item.image ? `<img class="card-img" src="${item.image}" alt="${item.name}">` : `<div class="card-img-ph">🧵</div>`}
       <div class="card-top">
         <span class="meter-badge">${item.meters}</span>
         <span class="qty-badge ${qty > 0 ? 'show' : ''}">${qty}x in bill</span>
@@ -1350,6 +1438,21 @@ function onDiscountChange() {
   renderBill();
 }
 
+function onGstChange() {
+  let val = parseFloat(document.getElementById('gstInput').value);
+  if (isNaN(val) || val < 0) val = 0;
+  if (val > 100) val = 100;
+  gstPct = val;
+  renderBill();
+}
+
+function onCourierChange() {
+  let val = parseFloat(document.getElementById('courierInput').value);
+  if (isNaN(val) || val < 0) val = 0;
+  courierCharge = val;
+  renderBill();
+}
+
 function billTotals() {
   let totalCount = 0, subtotal = 0;
   Object.keys(bill).forEach(id => {
@@ -1359,8 +1462,11 @@ function billTotals() {
     subtotal += qty * item.price;
   });
   const discountAmt = Math.round(subtotal * (discountPct / 100));
-  const finalTotal = subtotal - discountAmt;
-  return { totalCount, subtotal, discountAmt, finalTotal };
+  const afterDiscount = subtotal - discountAmt;
+  const gstAmt = Math.round(afterDiscount * (gstPct / 100));
+  const courierAmt = courierCharge || 0;
+  const finalTotal = afterDiscount + gstAmt + courierAmt;
+  return { totalCount, subtotal, discountAmt, gstAmt, courierAmt, finalTotal };
 }
 
 function renderBill() {
@@ -1458,7 +1564,7 @@ function generateInvoice() {
     tbody.appendChild(tr);
   });
 
-  const { totalCount, subtotal, discountAmt, finalTotal } = billTotals();
+  const { totalCount, subtotal, discountAmt, gstAmt, courierAmt, finalTotal } = billTotals();
 
   document.getElementById('invCount').textContent = totalCount;
   document.getElementById('invSubtotal').textContent = '₹' + subtotal.toLocaleString('en-IN');
@@ -1469,6 +1575,21 @@ function generateInvoice() {
     document.getElementById('invDiscountAmt').textContent = '-₹' + discountAmt.toLocaleString('en-IN');
   } else {
     discRow.style.display = 'none';
+  }
+  const gstRow = document.getElementById('invGstRow');
+  if (gstAmt > 0) {
+    gstRow.style.display = 'flex';
+    document.getElementById('invGstLabel').textContent = `GST (${gstPct}%)`;
+    document.getElementById('invGstAmt').textContent = '₹' + gstAmt.toLocaleString('en-IN');
+  } else {
+    gstRow.style.display = 'none';
+  }
+  const courierRow = document.getElementById('invCourierRow');
+  if (courierAmt > 0) {
+    courierRow.style.display = 'flex';
+    document.getElementById('invCourierAmt').textContent = '₹' + courierAmt.toLocaleString('en-IN');
+  } else {
+    courierRow.style.display = 'none';
   }
   document.getElementById('invTotal').textContent = '₹' + finalTotal.toLocaleString('en-IN');
 
@@ -1482,6 +1603,9 @@ function generateInvoice() {
     subtotal: subtotal,
     discountPct: discountPct,
     discountAmt: discountAmt,
+    gstPct: gstPct,
+    gstAmt: gstAmt,
+    courierAmt: courierAmt,
     totalAmount: finalTotal
   });
   saveSales(sales);
@@ -1489,7 +1613,7 @@ function generateInvoice() {
   saveMeta(meta);
   computeTopSellers();
 
-  lastInvoice = { invNo, date: today.toLocaleDateString('en-IN'), customer: { ...customer }, saleItems, totalCount, subtotal, discountAmt, finalTotal };
+  lastInvoice = { invNo, date: today.toLocaleDateString('en-IN'), customer: { ...customer }, saleItems, totalCount, subtotal, discountAmt, gstAmt, courierAmt, finalTotal };
 
   showScreen('screenInvoice');
   launchConfetti();
@@ -1507,11 +1631,15 @@ function newBill() {
   bill = {};
   displayedTotal = 0;
   discountPct = 0;
+  gstPct = 0;
+  courierCharge = 0;
   document.getElementById('custName').value = '';
   document.getElementById('custPhone').value = '';
   document.getElementById('custOoru').value = '';
   document.getElementById('searchBox').value = '';
   document.getElementById('discountInput').value = 0;
+  document.getElementById('gstInput').value = 0;
+  document.getElementById('courierInput').value = 0;
   document.getElementById('returningBadge').textContent = '';
   activeFilter = 'ALL';
   activeQty = 1;
@@ -1690,10 +1818,10 @@ function changeAdminPassword() {
 
 function exportSalesCSV() {
   if (sales.length === 0) { showToast('⚠️ Innum sales illa'); return; }
-  let csv = 'Invoice No,Date,Customer Name,Phone,Village/City,Saree,Meters,Price,Qty,Amount,Bill Total\n';
+  let csv = 'Invoice No,Date,Customer Name,Phone,Village/City,Saree,Meters,Price,Qty,Amount,GST,Courier Charge,Bill Total\n';
   sales.forEach(s => {
     s.items.forEach(it => {
-      csv += `"${s.id}","${new Date(s.date).toLocaleDateString('en-IN')}","${s.customer.name}","${s.customer.phone}","${s.customer.ooru}","${it.name}","${it.meters}",${it.price},${it.qty},${it.amount},${s.totalAmount}\n`;
+      csv += `"${s.id}","${new Date(s.date).toLocaleDateString('en-IN')}","${s.customer.name}","${s.customer.phone}","${s.customer.ooru}","${it.name}","${it.meters}",${it.price},${it.qty},${it.amount},${s.gstAmt || 0},${s.courierAmt || 0},${s.totalAmount}\n`;
     });
   });
   const blob = new Blob([csv], { type: 'text/csv' });
@@ -1746,6 +1874,21 @@ function printTransaction(id) {
     document.getElementById('invDiscountAmt').textContent = '-₹' + sale.discountAmt.toLocaleString('en-IN');
   } else {
     discRow.style.display = 'none';
+  }
+  const gstRow = document.getElementById('invGstRow');
+  if (sale.gstAmt > 0) {
+    gstRow.style.display = 'flex';
+    document.getElementById('invGstLabel').textContent = `GST (${sale.gstPct || 0}%)`;
+    document.getElementById('invGstAmt').textContent = '₹' + sale.gstAmt.toLocaleString('en-IN');
+  } else {
+    gstRow.style.display = 'none';
+  }
+  const courierRow = document.getElementById('invCourierRow');
+  if (sale.courierAmt > 0) {
+    courierRow.style.display = 'flex';
+    document.getElementById('invCourierAmt').textContent = '₹' + sale.courierAmt.toLocaleString('en-IN');
+  } else {
+    courierRow.style.display = 'none';
   }
   document.getElementById('invTotal').textContent = '₹' + sale.totalAmount.toLocaleString('en-IN');
 
@@ -1897,6 +2040,8 @@ function renderManage() {
       const row = document.createElement('div');
       row.className = 'manage-row';
       row.innerHTML = `
+        ${item.image ? `<img class="manage-img-thumb" src="${item.image}" alt="${item.name}">` : `<div class="manage-img-ph">🧵</div>`}
+        <label class="manage-img-upload-label" title="Saree photo maathunga">📷<input type="file" accept="image/*" style="display:none;" onchange="handleSareeImageUpload(${item.id}, event)"></label>
         <span class="m-name">${item.name}</span>
         <input type="number" class="m-price" id="price-${item.id}" value="${item.price}">
         <button class="btn-save-row" onclick="saveSareePrice(${item.id})">💾</button>
@@ -1913,6 +2058,23 @@ function renderManage() {
     opt.value = m;
     datalist.appendChild(opt);
   });
+}
+
+function handleSareeImageUpload(id, event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('⚠️ Image file podunga (JPG/PNG)'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const item = catalog.find(c => c.id === id);
+    if (!item) return;
+    item.image = e.target.result;
+    saveCatalog(catalog);
+    renderManage();
+    renderCatalog();
+    showToast('📷 ' + item.name + ' photo updated!');
+  };
+  reader.readAsDataURL(file);
 }
 
 function saveSareePrice(id) {
@@ -1937,6 +2099,22 @@ function deleteSaree(id) {
   showToast('🗑️ Saree deleted');
 }
 
+let newSareeImageData = null;
+
+function handleNewSareeImagePreview(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('⚠️ Image file podunga (JPG/PNG)'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    newSareeImageData = e.target.result;
+    const preview = document.getElementById('newSareeImgPreview');
+    preview.src = newSareeImageData;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
 function addNewSaree() {
   const name = document.getElementById('newSareeName').value.trim();
   const meters = document.getElementById('newSareeMeters').value.trim();
@@ -1947,14 +2125,18 @@ function addNewSaree() {
     return;
   }
   const newId = catalog.length ? Math.max(...catalog.map(c => c.id)) + 1 : 1;
-  catalog.push({ id: newId, meters, name: name.toUpperCase(), price });
+  catalog.push({ id: newId, meters, name: name.toUpperCase(), price, image: newSareeImageData || null });
   saveCatalog(catalog);
 
   document.getElementById('newSareeName').value = '';
   document.getElementById('newSareeMeters').value = '';
   document.getElementById('newSareePrice').value = '';
+  document.getElementById('newSareeImageInput').value = '';
+  document.getElementById('newSareeImgPreview').style.display = 'none';
+  newSareeImageData = null;
 
   renderManage();
+  renderCatalog();
   showToast('✅ New saree added to catalog!');
 }
 </script>
