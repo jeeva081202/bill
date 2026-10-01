@@ -749,6 +749,14 @@
     body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
   }
 </style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#8f0e2a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Krishnu Bill">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 </head>
 <body>
 <div class="aurora"><span></span><span></span><span></span><span></span></div>
@@ -2292,6 +2300,11 @@ function addNewSaree() {
 
   renderManage();
   showToast('✅ New saree added to catalog!');
+}
+</script>
+<script>
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
 }
 </script>
 </body>
