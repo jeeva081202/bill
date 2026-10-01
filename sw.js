@@ -1,5 +1,5 @@
-const CACHE = 'krishnu-bill-v1';
-const ASSETS = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
+const CACHE = 'krishnu-bill-v2';
+const ASSETS = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png', './libs/jspdf.umd.min.js', './libs/jspdf.plugin.autotable.min.js', './libs/html2canvas.min.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
 });

@@ -748,6 +748,45 @@
     .admin-header { padding-top: calc(12px + env(safe-area-inset-top)); }
     body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
   }
+
+  /* ---------- Backup / Report / PDF additions ---------- */
+  .inv-actions { flex-wrap: wrap; }
+  .inv-actions button { flex: 1 1 45%; }
+  .btn-pdf { background: linear-gradient(120deg,#b8860b,#f0c14b); color: #3a1d00; box-shadow: 0 6px 20px rgba(240,193,75,0.35); }
+  .report-card, .backup-card {
+    background: linear-gradient(160deg,#241130,#1a0e24); border: 1px solid rgba(240,193,75,0.18); border-radius: 14px;
+    padding: 14px; margin-bottom: 14px;
+  }
+  .report-controls { display: flex; gap: 8px; margin-bottom: 12px; }
+  .report-controls input {
+    flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(240,193,75,0.3); background: #150a1e;
+    color: #fff; font-size: 13px; outline: none; color-scheme: dark; font-family: inherit;
+  }
+  .report-controls button, .backup-btn {
+    background: linear-gradient(120deg,var(--gold),#ffb347); color: #5c2c00; border: none; padding: 10px 14px;
+    border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; font-family: inherit;
+  }
+  .report-sum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .report-sum-grid div { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 9px 10px; }
+  .report-sum-grid small { display: block; font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; }
+  .report-sum-grid b { font-size: 15px; color: var(--gold); }
+  .report-sum-grid .big { grid-column: 1 / -1; text-align: center; }
+  .report-sum-grid .big b { font-size: 22px; color: var(--emerald); }
+  .report-sub { font-size: 11px; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: .6px; margin: 10px 0 6px; }
+  .report-row { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 7px 2px; border-bottom: 1px dashed rgba(255,255,255,0.08); }
+  .report-row span:first-child { color: #eee; }
+  .report-row span:last-child { color: var(--emerald); font-weight: 700; white-space: nowrap; }
+  .report-row .dim { color: var(--text-dim); font-size: 10.5px; }
+  .backup-btns { display: flex; gap: 8px; }
+  .backup-btns > * { flex: 1; text-align: center; }
+  .backup-btn.restore { background: linear-gradient(120deg,var(--emerald),var(--emerald-deep)); color: #fff; }
+  .backup-info { font-size: 11px; color: var(--text-dim); margin-top: 10px; text-align: center; }
+  .backup-nudge {
+    background: linear-gradient(120deg,rgba(255,46,99,0.18),rgba(240,193,75,0.14)); border: 1px solid rgba(255,46,99,0.45);
+    border-radius: 12px; padding: 11px 13px; margin-bottom: 14px; font-size: 12px; color: #fff; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  }
+  .backup-nudge b { color: var(--gold); white-space: nowrap; }
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#8f0e2a">
@@ -925,6 +964,7 @@
     <div class="inv-actions">
       <button class="btn-new ripple-btn" onclick="newBill()">+ New Bill</button>
       <button class="btn-whatsapp ripple-btn" onclick="shareOnWhatsApp()">📤 WhatsApp</button>
+      <button class="btn-pdf ripple-btn" onclick="downloadBillPDF()">📄 PDF Bill</button>
       <button class="btn-print ripple-btn" onclick="window.print()">🖨️ Print</button>
     </div>
   </div>
@@ -955,6 +995,7 @@
     </div>
 
     <div class="admin-body" id="adminBodyDash">
+      <div class="backup-nudge" id="backupNudge" style="display:none;" onclick="backupData()"></div>
       <div class="goal-card" id="goalCard">
         <div class="goal-top">
           <span class="goal-title">🎯 Today's Goal</span>
@@ -1007,6 +1048,15 @@
       <div class="section-title">🧾 Recent Transactions</div>
       <div id="recentTxns"></div>
 
+      <div class="section-title">📅 Monthly Sales Report</div>
+      <div class="report-card">
+        <div class="report-controls">
+          <input type="month" id="reportMonth" onchange="renderReport()">
+          <button class="ripple-btn" onclick="downloadReportPDF()">📄 PDF</button>
+        </div>
+        <div id="reportBody"></div>
+      </div>
+
       <button class="export-btn ripple-btn" onclick="exportSalesCSV()">⬇️ Export Sales Report (CSV)</button>
     </div>
 
@@ -1031,6 +1081,17 @@
     </div>
 
     <div class="admin-body" id="adminBodySettings" style="display:none;">
+      <div class="section-title">💾 Backup &amp; Restore</div>
+      <div class="backup-card">
+        <p class="logo-hint">Save all your bills, sarees, stock and settings as one file. Keep it safe (send it to yourself on WhatsApp or Google Drive). On a new phone, use Restore to bring everything back.</p>
+        <div class="backup-btns">
+          <button class="backup-btn ripple-btn" onclick="backupData()">⬇️ Backup Now</button>
+          <label class="backup-btn restore ripple-btn" for="restoreInput">⬆️ Restore</label>
+        </div>
+        <input type="file" id="restoreInput" accept=".json,application/json" style="display:none;" onchange="restoreData(event)">
+        <div class="backup-info" id="backupInfo"></div>
+      </div>
+
       <div class="section-title">🖼️ Shop Logo</div>
       <div class="logo-settings-card">
         <img class="logo-img logo-preview" id="logoPreview" alt="Current logo">
@@ -1915,6 +1976,7 @@ function renderSettings() {
   document.getElementById('dailyGoalInput').value = meta.dailyGoal || 0;
   document.getElementById('invoiceCounterInput').value = meta.invoiceCounter || 1;
   updateNextInvoicePreview();
+  renderBackupInfo();
 }
 
 function updateNextInvoicePreview() {
@@ -2085,6 +2147,8 @@ function startOfWeek(date) {
 
 function renderDashboard() {
   renderLowStock();
+  updateBackupNudge();
+  renderReport();
   document.getElementById('custLookupInput').value = '';
   document.getElementById('custLookupResults').innerHTML = '';
   const now = new Date();
@@ -2196,6 +2260,241 @@ function renderDashboard() {
       `;
       txnWrap.appendChild(row);
     });
+  }
+}
+
+
+// ---------------- Helpers: lazy-load PDF libraries, share/download files ----------------
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector('script[data-src="' + src + '"]')) return resolve();
+    const s = document.createElement('script');
+    s.src = src; s.dataset.src = src;
+    s.onload = resolve; s.onerror = () => reject(new Error('Could not load ' + src));
+    document.head.appendChild(s);
+  });
+}
+async function ensurePdfLibs(needCanvas) {
+  await loadScriptOnce('libs/jspdf.umd.min.js');
+  await loadScriptOnce('libs/jspdf.plugin.autotable.min.js');
+  if (needCanvas) await loadScriptOnce('libs/html2canvas.min.js');
+}
+async function shareOrDownload(blob, filename, title) {
+  try {
+    const file = new File([blob], filename, { type: blob.type });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: title || filename });
+      return;
+    }
+  } catch (e) {
+    if (e && e.name === 'AbortError') return; // user closed the share sheet
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  showToast('✅ Saved to Downloads: ' + filename);
+}
+function rs(n) { return 'Rs. ' + Math.round(n || 0).toLocaleString('en-IN'); }
+function inr(n) { return '₹' + Math.round(n || 0).toLocaleString('en-IN'); }
+function safeName(t) { return String(t || '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30); }
+
+// ---------------- PDF Bill ----------------
+async function downloadBillPDF() {
+  const btn = document.querySelector('.btn-pdf');
+  const oldText = btn ? btn.textContent : '';
+  try {
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Making PDF...'; }
+    await ensurePdfLibs(true);
+    const el = document.querySelector('#screenInvoice .receipt-content');
+    const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+    const img = canvas.toDataURL('image/jpeg', 0.92);
+    const { jsPDF } = window.jspdf;
+    const w = 110, m = 6;                       // receipt-style page, 110mm wide
+    const h = canvas.height * w / canvas.width;
+    const pdf = new jsPDF({ unit: 'mm', format: [w + m * 2, h + m * 2] });
+    pdf.addImage(img, 'JPEG', m, m, w, h);
+    const invNo = document.getElementById('invNo').textContent || 'Bill';
+    const name = safeName(document.getElementById('invName').textContent);
+    await shareOrDownload(pdf.output('blob'), `${invNo}${name ? '-' + name : ''}.pdf`, 'Bill ' + invNo);
+  } catch (e) {
+    console.error(e);
+    showToast('⚠️ PDF failed. Please try again.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = oldText; }
+  }
+}
+
+// ---------------- Backup & Restore ----------------
+function backupData() {
+  let logo = null;
+  try { logo = localStorage.getItem(LS_LOGO); } catch (e) {}
+  meta.lastBackup = new Date().toISOString();
+  saveMeta(meta);
+  const data = {
+    app: 'krishnu-billing', version: 1, exportedAt: meta.lastBackup,
+    catalog: catalog, sales: sales, meta: meta, logo: logo
+  };
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const filename = 'krishnu-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  shareOrDownload(blob, filename, 'Krishnu Billing Backup');
+  renderBackupInfo();
+  updateBackupNudge();
+}
+
+function restoreData(event) {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let data;
+    try { data = JSON.parse(e.target.result); } catch (err) { showToast('⚠️ This is not a valid backup file'); return; }
+    if (!data || data.app !== 'krishnu-billing' || !Array.isArray(data.sales) || !Array.isArray(data.catalog)) {
+      showToast('⚠️ This is not a Krishnu backup file'); return;
+    }
+    const when = data.exportedAt ? new Date(data.exportedAt).toLocaleString('en-IN') : 'unknown date';
+    if (!confirm(`Restore backup from ${when}?\n\n${data.sales.length} bills, ${data.catalog.length} sarees.\n\nThe data currently on this phone will be replaced.`)) return;
+    try {
+      localStorage.setItem(LS_CATALOG, JSON.stringify(data.catalog));
+      localStorage.setItem(LS_SALES, JSON.stringify(data.sales));
+      localStorage.setItem(LS_META, JSON.stringify(data.meta || { invoiceCounter: 1 }));
+      if (data.logo) localStorage.setItem(LS_LOGO, data.logo); else localStorage.removeItem(LS_LOGO);
+    } catch (err) { showToast('⚠️ Restore failed — phone storage is full'); return; }
+    showToast('✅ Backup restored! Reloading...');
+    setTimeout(() => location.reload(), 900);
+  };
+  reader.readAsText(file);
+}
+
+function daysSince(iso) { return iso ? Math.floor((Date.now() - new Date(iso).getTime()) / 86400000) : null; }
+
+function renderBackupInfo() {
+  const el = document.getElementById('backupInfo');
+  if (!el) return;
+  const d = daysSince(meta.lastBackup);
+  el.textContent = d === null ? 'No backup taken yet.'
+    : 'Last backup: ' + new Date(meta.lastBackup).toLocaleString('en-IN') + (d > 0 ? ` (${d} day${d > 1 ? 's' : ''} ago)` : ' (today)');
+}
+
+function updateBackupNudge() {
+  const el = document.getElementById('backupNudge');
+  if (!el) return;
+  const d = daysSince(meta.lastBackup);
+  if (sales.length > 0 && (d === null || d >= 7)) {
+    el.innerHTML = `<span>⚠️ ${d === null ? 'You have never taken a backup.' : 'Last backup was ' + d + ' days ago.'} If this phone is lost, your bills are gone.</span><b>Backup →</b>`;
+    el.style.display = 'flex';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// ---------------- Monthly Sales Report ----------------
+function currentYM() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function ymLabel(ym) { const [y, m] = ym.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }); }
+
+function computeReport(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  const list = sales.filter(s => { const d = new Date(s.date); return d.getFullYear() === y && d.getMonth() === m - 1; })
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+  const r = { list, bills: list.length, qty: 0, subtotal: 0, discount: 0, gst: 0, courier: 0, total: 0, days: {}, sarees: {}, customers: new Set() };
+  list.forEach(s => {
+    r.qty += s.totalQty || 0;
+    r.subtotal += s.subtotal != null ? s.subtotal : s.totalAmount;
+    r.discount += s.discountAmt || 0;
+    r.gst += s.gstAmt || 0;
+    r.courier += s.courierAmt || 0;
+    r.total += s.totalAmount || 0;
+    if (s.customer && s.customer.phone) r.customers.add(s.customer.phone);
+    const key = new Date(s.date).toLocaleDateString('en-IN');
+    const day = r.days[key] || (r.days[key] = { date: key, bills: 0, qty: 0, amt: 0 });
+    day.bills++; day.qty += s.totalQty || 0; day.amt += s.totalAmount || 0;
+    s.items.forEach(it => {
+      const k = it.name + ' (' + it.meters + ')';
+      const sr = r.sarees[k] || (r.sarees[k] = { name: k, qty: 0, amt: 0 });
+      sr.qty += it.qty; sr.amt += it.amount;
+    });
+  });
+  r.dayList = Object.values(r.days);
+  r.sareeList = Object.values(r.sarees).sort((a, b) => b.qty - a.qty);
+  r.avg = r.bills ? r.total / r.bills : 0;
+  return r;
+}
+
+function renderReport() {
+  const input = document.getElementById('reportMonth');
+  if (!input) return;
+  if (!input.value) input.value = currentYM();
+  const r = computeReport(input.value);
+  const body = document.getElementById('reportBody');
+  if (r.bills === 0) { body.innerHTML = '<div class="empty-msg">No sales in ' + ymLabel(input.value) + '</div>'; return; }
+  let html = `<div class="report-sum-grid">
+      <div class="big"><small>Total Sales · ${ymLabel(input.value)}</small><b>${inr(r.total)}</b></div>
+      <div><small>Bills</small><b>${r.bills}</b></div>
+      <div><small>Sarees Sold</small><b>${r.qty}</b></div>
+      <div><small>Avg per Bill</small><b>${inr(r.avg)}</b></div>
+      <div><small>Customers</small><b>${r.customers.size}</b></div>
+      ${r.discount ? `<div><small>Discount Given</small><b>${inr(r.discount)}</b></div>` : ''}
+      ${r.gst ? `<div><small>GST Collected</small><b>${inr(r.gst)}</b></div>` : ''}
+      ${r.courier ? `<div><small>Courier Charges</small><b>${inr(r.courier)}</b></div>` : ''}
+    </div>`;
+  html += '<div class="report-sub">Day-wise sales</div>';
+  r.dayList.forEach(d => { html += `<div class="report-row"><span>${d.date} <span class="dim">· ${d.bills} bill${d.bills > 1 ? 's' : ''} · ${d.qty} sarees</span></span><span>${inr(d.amt)}</span></div>`; });
+  html += '<div class="report-sub">Saree-wise sales</div>';
+  r.sareeList.forEach(x => { html += `<div class="report-row"><span>${x.name} <span class="dim">· ${x.qty} sold</span></span><span>${inr(x.amt)}</span></div>`; });
+  body.innerHTML = html;
+}
+
+async function downloadReportPDF() {
+  const ym = document.getElementById('reportMonth').value || currentYM();
+  const r = computeReport(ym);
+  if (r.bills === 0) { showToast('⚠️ No sales in ' + ymLabel(ym)); return; }
+  try {
+    showToast('⏳ Making report PDF...');
+    await ensurePdfLibs(false);
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const ruby = [143, 14, 42], gold = [184, 134, 11];
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(...ruby);
+    doc.text('KRISHNU COTTON SAREES', 105, 18, { align: 'center' });
+    doc.setFontSize(12); doc.setTextColor(...gold);
+    doc.text('Monthly Sales Report - ' + ymLabel(ym), 105, 26, { align: 'center' });
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(120);
+    doc.text('Generated on ' + new Date().toLocaleString('en-IN'), 105, 31, { align: 'center' });
+
+    const head = { fillColor: ruby, textColor: 255, fontStyle: 'bold' };
+    const summary = [['Total Sales', rs(r.total)], ['Number of Bills', String(r.bills)], ['Sarees Sold', String(r.qty)],
+      ['Average per Bill', rs(r.avg)], ['Unique Customers', String(r.customers.size)], ['Subtotal (before discount)', rs(r.subtotal)]];
+    if (r.discount) summary.push(['Discount Given', '- ' + rs(r.discount)]);
+    if (r.gst) summary.push(['GST Collected', rs(r.gst)]);
+    if (r.courier) summary.push(['Courier Charges', rs(r.courier)]);
+    doc.autoTable({ startY: 36, head: [['Summary', '']], body: summary, theme: 'grid', headStyles: head,
+      columnStyles: { 1: { halign: 'right', fontStyle: 'bold' } }, margin: { left: 14, right: 14 } });
+
+    doc.autoTable({ startY: doc.lastAutoTable.finalY + 8, head: [['Date', 'Bills', 'Sarees', 'Amount']],
+      body: r.dayList.map(d => [d.date, d.bills, d.qty, rs(d.amt)]), theme: 'striped', headStyles: head,
+      columnStyles: { 1: { halign: 'center' }, 2: { halign: 'center' }, 3: { halign: 'right' } }, margin: { left: 14, right: 14 } });
+
+    doc.autoTable({ startY: doc.lastAutoTable.finalY + 8, head: [['#', 'Saree', 'Qty Sold', 'Amount']],
+      body: r.sareeList.map((x, i) => [i + 1, x.name, x.qty, rs(x.amt)]), theme: 'striped', headStyles: head,
+      columnStyles: { 0: { halign: 'center', cellWidth: 10 }, 2: { halign: 'center' }, 3: { halign: 'right' } }, margin: { left: 14, right: 14 } });
+
+    doc.autoTable({ startY: doc.lastAutoTable.finalY + 8, head: [['Bill No', 'Date', 'Customer', 'Place', 'Sarees', 'Total']],
+      body: r.list.map(s => [s.id, new Date(s.date).toLocaleDateString('en-IN'), s.customer.name || '', s.customer.ooru || '', s.totalQty, rs(s.totalAmount)]),
+      foot: [['', '', '', 'TOTAL', r.qty, rs(r.total)]], theme: 'striped', headStyles: head,
+      footStyles: { fillColor: [251, 246, 234], textColor: ruby, fontStyle: 'bold' },
+      columnStyles: { 4: { halign: 'center' }, 5: { halign: 'right' } }, styles: { fontSize: 8.5 }, margin: { left: 14, right: 14 } });
+
+    const pages = doc.getNumberOfPages();
+    for (let i = 1; i <= pages; i++) {
+      doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150);
+      doc.text(`Page ${i} of ${pages}`, 196, 290, { align: 'right' });
+    }
+    await shareOrDownload(doc.output('blob'), 'Krishnu-Sales-Report-' + ym + '.pdf', 'Sales Report ' + ymLabel(ym));
+  } catch (e) {
+    console.error(e);
+    showToast('⚠️ Report PDF failed. Please try again.');
   }
 }
 
